@@ -1,0 +1,25 @@
+spring:
+  application:
+    name: blackjack-api
+
+  data:
+    mongodb:
+      uri: mongodb://localhost:27017/blackjack_db
+      auto-index-creation: true
+
+  r2dbc:
+    url: r2dbc:mysql://localhost:3307/blackjack_db
+    username: root
+    password: root
+    pool:
+      initial-size: 10
+      max-size: 20
+
+  sql:
+    init:
+      mode: always
+      schema-locations: classpath:schema.sql
+      continue-on-error: true
+
+server:
+  port: 9000
