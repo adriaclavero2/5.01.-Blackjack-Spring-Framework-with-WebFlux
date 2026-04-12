@@ -1,0 +1,34 @@
+package com.blackjack.blackjack_api.service;
+
+import com.blackjack.blackjack_api.controller.PlayerController;
+import com.blackjack.blackjack_api.model.Player;
+import com.blackjack.blackjack_api.repository.PlayerRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import reactor.core.publisher.Mono;
+
+import java.time.LocalDateTime;
+import java.util.UUID;
+
+@Service
+@RequiredArgsConstructor
+public class PlayerService {
+
+    private final PlayerRepository playerRepository;
+
+    public Mono<Player> createPlayer(String name) {
+
+        Player newPlayer = Player.builder()
+                .id(UUID.randomUUID().toString())
+                .name(name)
+                .gamesPlayed(0)
+                .gamesLost(0)
+                .gamesTied(0)
+                .winRate(0.0)
+                .createdAt(LocalDateTime.now())
+                .updatedAt(LocalDateTime.now())
+                .build();
+
+        return playerRepository.save(newPlayer);
+    }
+}
