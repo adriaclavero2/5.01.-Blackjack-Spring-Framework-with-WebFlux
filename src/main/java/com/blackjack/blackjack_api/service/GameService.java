@@ -61,6 +61,23 @@ public class GameService {
     }
 
     private Card drawCard(List<Card> deck) {
-        return deck.remove(0);
+        return deck.removeFirst();
+    }
+
+    private int calculateHandScore(List<Card> hand) {
+        int totalScore = hand.stream()
+                .mapToInt(Card::getValue)
+                .sum();
+
+        long acesCount = hand.stream()
+                .filter(card -> "A".equals(card.getRank()))
+                .count();
+
+        while (totalScore > 21 && acesCount > 0) {
+            totalScore -= 10;
+            acesCount--;
+        }
+
+        return totalScore;
     }
 }
