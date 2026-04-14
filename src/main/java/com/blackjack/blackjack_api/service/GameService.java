@@ -50,6 +50,7 @@ public class GameService {
 
         Game newGame = Game.builder()
                 .playerId(playerId)
+                .deck(deck)
                 .playerHand(playerHand)
                 .dealerHand(dealerHand)
                 .status(GameStatus.IN_PROGRESS)
@@ -58,6 +59,26 @@ public class GameService {
                 .build();
 
         return gameRepository.save(newGame);
+    }
+
+    public Mono<Game> playerHits(String gameId) {
+        return gameRepository.findById(gameId)
+                .flatMap(game -> {
+                    if (game.getStatus() != GameStatus.IN_PROGRESS) {
+                        return Mono.error(new RuntimeException("Game is already finished."));
+                    }
+
+                    game.getPlayerHand().add(drawCard(game.getDeck()));
+
+                    int playerScore = calculateHandScore(game.getPlayerHand());
+
+                    if (playerScore > 21) {
+                        game.setStatus(GameStatus.DEALER_WINS);
+                    }
+
+                    game.setUpdatedAt(LocalDateTime.now());
+                    return gameRepository.save(game);
+                });
     }
 
     private Card drawCard(List<Card> deck) {

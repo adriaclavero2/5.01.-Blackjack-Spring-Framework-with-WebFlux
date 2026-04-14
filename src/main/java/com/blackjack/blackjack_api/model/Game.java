@@ -24,6 +24,9 @@ public class Game {
     private String playerId;
 
     @Builder.Default
+    private List<Card> deck = new ArrayList<>();
+
+    @Builder.Default
     private List<Card> playerHand = new ArrayList<>();
 
     @Builder.Default
