@@ -81,6 +81,37 @@ public class GameService {
                 });
     }
 
+    public Mono<Game> playerStands(String gameId) {
+        return gameRepository.findById(gameId)
+                .flatMap(game -> {
+                    if (game.getStatus() != GameStatus.IN_PROGRESS) {
+                        return Mono.error(new RuntimeException("Game is already finished."));
+                    }
+
+                    int dealerScore = calculateHandScore(game.getDealerHand());
+
+                    while (dealerScore < 17) {
+                        game.getDealerHand().add(drawCard(game.getDeck()));
+                        dealerScore = calculateHandScore(game.getDealerHand());
+                    }
+
+                    int playerScore = calculateHandScore(game.getPlayerHand());
+
+                    if (dealerScore > 21) {
+                        game.setStatus(GameStatus.PLAYER_WINS);
+                    } else if (dealerScore > playerScore) {
+                        game.setStatus(GameStatus.DEALER_WINS);
+                    } else if (dealerScore < playerScore) {
+                        game.setStatus(GameStatus.PLAYER_WINS);
+                    } else {
+                        game.setStatus(GameStatus.TIE);
+                    }
+
+                    game.setUpdatedAt(LocalDateTime.now());
+                    return gameRepository.save(game);
+                });
+    }
+
     private Card drawCard(List<Card> deck) {
         return deck.removeFirst();
     }
