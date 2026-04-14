@@ -132,4 +132,12 @@ public class GameService {
 
         return totalScore;
     }
+
+    public Mono<Game> getGameById(String gameId) {
+        return gameRepository.findById(gameId);
+    }
+
+    public Mono<Void> deleteGame(String gameId) {
+        return gameRepository.deleteById(gameId);
+    }
 }
