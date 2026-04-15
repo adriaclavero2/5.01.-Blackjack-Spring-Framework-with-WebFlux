@@ -34,7 +34,7 @@ public class PlayerService {
     }
 
     public Flux<Player> getTopPlayers() {
-        return playerRepository.findAllByOrderByScoreDesc();
+        return playerRepository.findAllByOrderByGamesWonDesc();
     }
 
     public Mono<Player> updatePlayerName(String id, String newName) {

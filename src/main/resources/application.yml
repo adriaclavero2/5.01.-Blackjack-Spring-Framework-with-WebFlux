@@ -22,4 +22,10 @@ spring:
       continue-on-error: true
 
 server:
-  port: 9000
+  port: 8080
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
