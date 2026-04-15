@@ -5,6 +5,7 @@ import com.blackjack.blackjack_api.model.Player;
 import com.blackjack.blackjack_api.repository.PlayerRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.time.LocalDateTime;
@@ -30,5 +31,18 @@ public class PlayerService {
                 .build();
 
         return playerRepository.save(newPlayer);
+    }
+
+    public Flux<Player> getTopPlayers() {
+        return playerRepository.findAllByOrderByScoreDesc();
+    }
+
+    public Mono<Player> updatePlayerName(String id, String newName) {
+        return playerRepository.findById(id)
+                .flatMap(player -> {
+                    player.setName(newName);
+
+                    return playerRepository.save(player);
+                });
     }
 }
