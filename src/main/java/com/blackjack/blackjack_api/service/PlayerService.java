@@ -39,9 +39,12 @@ public class PlayerService {
 
     public Mono<Player> updatePlayerName(String id, String newName) {
         return playerRepository.findById(id)
+                .switchIfEmpty(Mono.error(new org.springframework.web.server
+                        .ResponseStatusException(org.springframework
+                        .http.HttpStatus.NOT_FOUND, "Player doesn't exist!")))
                 .flatMap(player -> {
                     player.setName(newName);
-
+                    player.setUpdatedAt(LocalDateTime.now());
                     return playerRepository.save(player);
                 });
     }
