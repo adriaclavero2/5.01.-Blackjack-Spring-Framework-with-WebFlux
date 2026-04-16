@@ -13,6 +13,7 @@ import reactor.core.publisher.Mono;
 import java.util.Map;
 
 @RestController
+@CrossOrigin(origins = "*")
 @RequiredArgsConstructor
 public class PlayerController {
 
