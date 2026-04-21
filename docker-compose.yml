@@ -1,5 +1,7 @@
+version: '3.8'
+
 services:
-  # 1. Base de datos Relacional (Jugadores)
+
   mysql-db:
     image: mysql:8.0
     container_name: blackjack-mysql
@@ -9,11 +11,36 @@ services:
     ports:
       - "3307:3306"
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-proot"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
 
-  # 2. Base de datos NoSQL (Partidas)
   mongo-db:
     image: mongo:latest
     container_name: blackjack-mongo
     ports:
       - "27017:27017"
     restart: unless-stopped
+
+  blackjack-api:
+    image: aaccmm2/blackjack-api:v1
+    container_name: blackjack-app
+    ports:
+      - "8085:8080"
+    depends_on:
+      mysql-db:
+        condition: service_healthy
+      mongo-db:
+        condition: service_started
+    # ESTO ES LO QUE SOLUCIONA EL PROBLEMA DEL JAR VIEJO
+    volumes:
+      - ./src/main/resources/application.yml:/app/application.yml
+    environment:
+      # Obligamos a Spring a mirar el archivo que acabamos de montar
+      - SPRING_CONFIG_LOCATION=file:/app/application.yml
+      - SPRING_DATA_MONGODB_URI=mongodb://mongo-db:27017/blackjack_db
+      - SPRING_R2DBC_URL=r2dbc:mysql://mysql-db:3306/blackjack_db
+      - SPRING_R2DBC_USERNAME=root
+      - SPRING_R2DBC_PASSWORD=root

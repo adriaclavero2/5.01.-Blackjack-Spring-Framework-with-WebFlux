@@ -4,11 +4,14 @@ spring:
 
   data:
     mongodb:
-      uri: mongodb://localhost:27017/blackjack_db
+      # CAMBIO: Usamos 'mongo-db' porque así se llama el servicio en tu docker-compose
+      uri: mongodb://mongo-db:27017/blackjack_db
       auto-index-creation: true
 
   r2dbc:
-    url: r2dbc:mysql://localhost:3307/blackjack_db
+    # CAMBIO: Usamos 'mysql-db' porque así se llama el servicio en tu docker-compose
+    # Mantenemos el puerto 3306 que es el interno de Docker
+    url: r2dbc:mysql://mysql-db:3306/blackjack_db
     username: root
     password: root
     pool:
@@ -25,7 +28,8 @@ server:
   port: 8080
 
 springdoc:
-  api-docs:
-    path: /v3/api-docs
   swagger-ui:
+    enabled: true
     path: /swagger-ui.html
+  api-docs:
+    enabled: true
