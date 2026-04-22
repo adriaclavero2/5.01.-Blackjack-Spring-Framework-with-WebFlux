@@ -2,13 +2,12 @@ spring:
   application:
     name: blackjack-api
 
-  data:
-    mongodb:
-      uri: mongodb://localhost:27017/blackjack_db
-      auto-index-creation: true
+  mongodb:
+    uri: mongodb://mongo-db:27017/blackjack_db
+    auto-index-creation: true
 
   r2dbc:
-    url: r2dbc:mysql://localhost:3307/blackjack_db
+    url: r2dbc:mysql://mysql-db:3306/blackjack_db
     username: root
     password: root
     pool:
