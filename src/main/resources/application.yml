@@ -3,11 +3,12 @@ spring:
     name: blackjack-api
 
   mongodb:
-    uri: mongodb://mongo-db:27017/blackjack_db
+    uri: mongodb://localhost:27017/blackjack_db
     auto-index-creation: true
 
   r2dbc:
-    url: r2dbc:mysql://mysql-db:3306/blackjack_db
+    # Usamos localhost y el puerto 3307 expuesto por Docker
+    url: r2dbc:mysql://localhost:3307/blackjack_db
     username: root
     password: root
     pool:
@@ -26,6 +27,5 @@ server:
 springdoc:
   swagger-ui:
     enabled: true
-    path: /swagger-ui.html
   api-docs:
     enabled: true

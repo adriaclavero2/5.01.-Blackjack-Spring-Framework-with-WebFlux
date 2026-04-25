@@ -1,7 +1,9 @@
 package com.blackjack.blackjack_api.controller;
 
 import com.blackjack.blackjack_api.dto.PlayerRequest;
+import com.blackjack.blackjack_api.model.Game;
 import com.blackjack.blackjack_api.model.Player;
+import com.blackjack.blackjack_api.service.GameService;
 import com.blackjack.blackjack_api.service.PlayerService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -18,6 +20,7 @@ import java.util.Map;
 public class PlayerController {
 
     private final PlayerService playerService;
+    private final GameService gameService;
 
     @PostMapping("/player")
     @ResponseStatus(HttpStatus.CREATED)
@@ -33,5 +36,10 @@ public class PlayerController {
     @PutMapping("/player/{playerId}")
     public Mono<Player> updatePlayerName(@PathVariable String playerId, @Valid @RequestBody PlayerRequest request) {
         return playerService.updatePlayerName(playerId, request.getName());
+    }
+
+    @GetMapping("/player/{playerId}/games")
+    public Flux<Game> getPlayerGames(@PathVariable String playerId) {
+        return gameService.getGamesByPlayerId(playerId);
     }
 }
