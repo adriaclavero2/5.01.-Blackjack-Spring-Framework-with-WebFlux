@@ -6,6 +6,7 @@ import com.blackjack.blackjack_api.model.GameStatus;
 import com.blackjack.blackjack_api.repository.GameRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.time.LocalDateTime;
@@ -21,6 +22,7 @@ import java.util.stream.IntStream;
 public class GameService {
 
     private final GameRepository gameRepository;
+    private final PlayerService playerService;
 
    private static final String[] SUITS = {"HEARTS", "DIAMONDS", "CLUBS", "SPADES"};
    private static final String[] RANKS = {"2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K", "A"};
@@ -71,13 +73,22 @@ public class GameService {
                     game.getPlayerHand().add(drawCard(game.getDeck()));
 
                     int playerScore = calculateHandScore(game.getPlayerHand());
-
+                    
                     if (playerScore > 21) {
                         game.setStatus(GameStatus.DEALER_WINS);
                     }
 
                     game.setUpdatedAt(LocalDateTime.now());
-                    return gameRepository.save(game);
+
+                    return gameRepository.save(game)
+                            .flatMap(savedGame -> {
+                                if (savedGame.getStatus() != GameStatus.IN_PROGRESS) {
+                                    return playerService.updatePlayerStats(savedGame.getPlayerId(),
+                                                    savedGame.getStatus())
+                                            .thenReturn(savedGame);
+                                }
+                                return Mono.just(savedGame);
+                            });
                 });
     }
 
@@ -108,7 +119,10 @@ public class GameService {
                     }
 
                     game.setUpdatedAt(LocalDateTime.now());
-                    return gameRepository.save(game);
+                    return gameRepository.save(game)
+                            .flatMap(savedGame -> playerService
+                                    .updatePlayerStats(savedGame.getPlayerId(), savedGame.getStatus())
+                            .thenReturn(savedGame));
                 });
     }
 
@@ -140,4 +154,6 @@ public class GameService {
     public Mono<Void> deleteGame(String gameId) {
         return gameRepository.deleteById(gameId);
     }
+
+    public Flux<Game> getGamesByPlayerId(String playerId) { return gameRepository.findAllByPlayerId(playerId); }
 }

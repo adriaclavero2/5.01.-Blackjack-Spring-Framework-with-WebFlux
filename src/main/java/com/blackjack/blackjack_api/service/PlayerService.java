@@ -1,6 +1,7 @@
 package com.blackjack.blackjack_api.service;
 
 import com.blackjack.blackjack_api.controller.PlayerController;
+import com.blackjack.blackjack_api.model.GameStatus;
 import com.blackjack.blackjack_api.model.Player;
 import com.blackjack.blackjack_api.repository.PlayerRepository;
 import lombok.RequiredArgsConstructor;
@@ -45,6 +46,28 @@ public class PlayerService {
                 .flatMap(player -> {
                     player.setName(newName);
                     player.setUpdatedAt(LocalDateTime.now());
+                    return playerRepository.save(player);
+                });
+    }
+
+    public Mono<Player> updatePlayerStats(String playerId, GameStatus result) {
+        return playerRepository.findById(playerId)
+                .flatMap(player -> {
+                    player.setGamesPlayed(player.getGamesPlayed() + 1);
+
+                    if (result == GameStatus.PLAYER_WINS) {
+                        player.setGamesWon(player.getGamesWon() + 1);
+                    } else if (result == GameStatus.DEALER_WINS) {
+                        player.setGamesLost(player.getGamesLost() + 1);
+                    } else if (result == GameStatus.TIE) {
+                        player.setGamesTied(player.getGamesTied() + 1);
+                    }
+
+                    double winRate = (double) player.getGamesWon() / player.getGamesPlayed() * 100;
+                    player.setWinRate(Math.round(winRate * 100.0) / 100.0);
+
+                    player.setUpdatedAt(LocalDateTime.now());
+
                     return playerRepository.save(player);
                 });
     }
