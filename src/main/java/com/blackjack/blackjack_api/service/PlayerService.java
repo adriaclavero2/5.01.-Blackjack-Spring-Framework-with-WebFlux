@@ -24,6 +24,7 @@ public class PlayerService {
                 .id(UUID.randomUUID().toString())
                 .name(name)
                 .gamesPlayed(0)
+                .gamesWon(0)
                 .gamesLost(0)
                 .gamesTied(0)
                 .winRate(0.0)
@@ -65,7 +66,6 @@ public class PlayerService {
 
                     double winRate = (double) player.getGamesWon() / player.getGamesPlayed() * 100;
                     player.setWinRate(Math.round(winRate * 100.0) / 100.0);
-
                     player.setUpdatedAt(LocalDateTime.now());
 
                     return playerRepository.save(player);
