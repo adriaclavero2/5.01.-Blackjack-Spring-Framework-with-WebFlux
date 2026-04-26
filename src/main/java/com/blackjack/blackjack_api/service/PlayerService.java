@@ -30,6 +30,7 @@ public class PlayerService {
                 .winRate(0.0)
                 .createdAt(LocalDateTime.now())
                 .updatedAt(LocalDateTime.now())
+                .isNewObject(true)
                 .build();
 
         return playerRepository.save(newPlayer);
