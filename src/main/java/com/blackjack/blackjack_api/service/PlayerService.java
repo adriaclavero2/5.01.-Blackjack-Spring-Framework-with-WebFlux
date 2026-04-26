@@ -45,6 +45,8 @@ public class PlayerService {
                         .ResponseStatusException(org.springframework
                         .http.HttpStatus.NOT_FOUND, "Player doesn't exist!")))
                 .flatMap(player -> {
+                    player.setNewObject(false);
+
                     player.setName(newName);
                     player.setUpdatedAt(LocalDateTime.now());
                     return playerRepository.save(player);
@@ -54,6 +56,8 @@ public class PlayerService {
     public Mono<Player> updatePlayerStats(String playerId, GameStatus result) {
         return playerRepository.findById(playerId)
                 .flatMap(player -> {
+                    player.setNewObject(false);
+
                     player.setGamesPlayed(player.getGamesPlayed() + 1);
 
                     if (result == GameStatus.PLAYER_WINS) {

@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.Transient;
 import org.springframework.data.relational.core.mapping.Table;
 
 import java.time.LocalDateTime;
@@ -29,4 +30,14 @@ public class Player {
 
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+
+    @Transient
+    @Builder.Default
+    private boolean isNewObject = true;
+
+    @Override
+    @Transient
+    public boolean isNew() {
+        return this.isNewObject || this.id == null;
+    }
 }
