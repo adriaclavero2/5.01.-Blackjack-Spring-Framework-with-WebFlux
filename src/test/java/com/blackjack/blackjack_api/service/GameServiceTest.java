@@ -1,7 +1,9 @@
 package com.blackjack.blackjack_api.service;
 
+import com.blackjack.blackjack_api.exception.GameRuleException;
 import com.blackjack.blackjack_api.model.entities.Card;
 import com.blackjack.blackjack_api.model.entities.Game;
+import com.blackjack.blackjack_api.model.entities.Player;
 import com.blackjack.blackjack_api.model.enums.GameStatus;
 import com.blackjack.blackjack_api.repository.GameRepository;
 import org.junit.jupiter.api.Test;
@@ -16,6 +18,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -24,11 +27,15 @@ class GameServiceTest {
     @Mock
     private GameRepository gameRepository;
 
+    @Mock
+    private PlayerService playerService; // ¡El ayudante que faltaba!
+
     @InjectMocks
     private GameService gameService;
 
     @Test
-    void testStartNewGame_Success() {
+    void startNewGame_ValidPlayer_CreatesGameInProgress() {
+        when(playerService.getPlayerById(anyString())).thenReturn(Mono.just(Player.builder().id("player-123").build()));
         when(gameRepository.save(any(Game.class))).thenAnswer(i -> Mono.just(i.getArgument(0)));
 
         Mono<Game> result = gameService.startNewGame("player-123");
@@ -44,9 +51,8 @@ class GameServiceTest {
     }
 
     @Test
-    void testPlayerHits_AndBusts_DealerWins() {
+    void playerHits_ScoreOver21_DealerWins() {
         List<Card> riggedDeck = new ArrayList<>(List.of(new Card("HEARTS", "10", 10)));
-
         List<Card> playerHand = new ArrayList<>(List.of(
                 new Card("SPADES", "10", 10),
                 new Card("DIAMONDS", "5", 5)
@@ -54,6 +60,7 @@ class GameServiceTest {
 
         Game game = Game.builder()
                 .id("game-1")
+                .playerId("player-1")
                 .status(GameStatus.IN_PROGRESS)
                 .deck(riggedDeck)
                 .playerHand(playerHand)
@@ -61,6 +68,7 @@ class GameServiceTest {
 
         when(gameRepository.findById("game-1")).thenReturn(Mono.just(game));
         when(gameRepository.save(any(Game.class))).thenAnswer(i -> Mono.just(i.getArgument(0)));
+        when(playerService.updatePlayerStats(anyString(), any())).thenReturn(Mono.empty());
 
         Mono<Game> result = gameService.playerHits("game-1");
 
@@ -72,14 +80,12 @@ class GameServiceTest {
     }
 
     @Test
-    void testPlayerStands_DealerMustHitAndBusts_PlayerWins() {
+    void playerStands_DealerBusts_PlayerWins() {
         List<Card> riggedDeck = new ArrayList<>(List.of(new Card("HEARTS", "10", 10)));
-
         List<Card> playerHand = new ArrayList<>(List.of(
                 new Card("SPADES", "10", 10),
                 new Card("DIAMONDS", "10", 10)
         ));
-
         List<Card> dealerHand = new ArrayList<>(List.of(
                 new Card("CLUBS", "10", 10),
                 new Card("HEARTS", "6", 6)
@@ -87,6 +93,7 @@ class GameServiceTest {
 
         Game game = Game.builder()
                 .id("game-2")
+                .playerId("player-2")
                 .status(GameStatus.IN_PROGRESS)
                 .deck(riggedDeck)
                 .playerHand(playerHand)
@@ -95,6 +102,7 @@ class GameServiceTest {
 
         when(gameRepository.findById("game-2")).thenReturn(Mono.just(game));
         when(gameRepository.save(any(Game.class))).thenAnswer(i -> Mono.just(i.getArgument(0)));
+        when(playerService.updatePlayerStats(anyString(), any())).thenReturn(Mono.empty());
 
         Mono<Game> result = gameService.playerStands("game-2");
 
@@ -106,7 +114,7 @@ class GameServiceTest {
     }
 
     @Test
-    void testPlayerHits_WhenGameIsFinished_ThrowsError() {
+    void playerHits_GameFinished_ThrowsGameRuleException() {
         Game game = Game.builder()
                 .id("game-3")
                 .status(GameStatus.PLAYER_WINS)
@@ -117,7 +125,7 @@ class GameServiceTest {
         Mono<Game> result = gameService.playerHits("game-3");
 
         StepVerifier.create(result)
-                .expectErrorMessage("Game is already finished.")
+                .expectError(GameRuleException.class)
                 .verify();
     }
 }

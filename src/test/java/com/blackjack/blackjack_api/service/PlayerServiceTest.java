@@ -29,7 +29,7 @@ class PlayerServiceTest {
     private PlayerService playerService;
 
     @Test
-    void testCreatePlayer_Success() {
+    void createPlayer_ValidName_SavesPlayerToDatabase() {
         when(playerRepository.save(any(Player.class)))
                 .thenAnswer(invocation -> Mono.just(invocation.getArgument(0)));
 
@@ -45,7 +45,7 @@ class PlayerServiceTest {
     }
 
     @Test
-    void testGetTopPlayers_Success() {
+    void getTopPlayers_HasPlayers_ReturnsSortedList() {
         Player p1 = Player.builder().id("1").name("Adrià").gamesWon(5).build();
         Player p2 = Player.builder().id("2").name("Bot").gamesWon(2).build();
         when(playerRepository.findAllByOrderByGamesWonDesc()).thenReturn(Flux.just(p1, p2));
@@ -59,7 +59,7 @@ class PlayerServiceTest {
     }
 
     @Test
-    void testUpdatePlayerName_Success() {
+    void updatePlayerName_PlayerExists_UpdatesName() {
         String fakeId = UUID.randomUUID().toString();
         Player oldPlayer = Player.builder().id(fakeId).name("OldName").updatedAt(LocalDateTime.now()).build();
 
@@ -74,7 +74,7 @@ class PlayerServiceTest {
     }
 
     @Test
-    void testUpdatePlayerName_NotFound() {
+    void updatePlayerName_PlayerNotFound_ThrowsException() {
         String fakeId = "id-inventado";
         when(playerRepository.findById(fakeId)).thenReturn(Mono.empty());
 

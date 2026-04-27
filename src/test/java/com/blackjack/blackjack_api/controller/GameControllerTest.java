@@ -26,14 +26,14 @@ class GameControllerTest {
     private GameService gameService;
 
     @Test
-    void testCreateNewGame_Returns201() {
+    void createNewGame_ValidRequest_ReturnsCreated() {
         Game mockGame = Game.builder().id("game-1").playerId("Adria").status(GameStatus.IN_PROGRESS).build();
         when(gameService.startNewGame(anyString())).thenReturn(Mono.just(mockGame));
 
         webTestClient.post()
                 .uri("/game/new")
                 .contentType(MediaType.APPLICATION_JSON)
-                .bodyValue("{\"playerName\": \"Adria\"}")
+                .bodyValue("{\"playerId\": \"Adria\"}") // Ajustado al nombre actual
                 .exchange()
                 .expectStatus().isCreated()
                 .expectBody()
@@ -42,7 +42,7 @@ class GameControllerTest {
     }
 
     @Test
-    void testGetGameDetails_Returns200() {
+    void getGameDetails_GameExists_ReturnsOk() {
         Game mockGame = Game.builder().id("game-1").playerId("Adria").build();
         when(gameService.getGameById("game-1")).thenReturn(Mono.just(mockGame));
 
@@ -55,7 +55,7 @@ class GameControllerTest {
     }
 
     @Test
-    void testPlayGame_Hit_Returns200() {
+    void playGame_ActionHit_ReturnsGameInProgress() {
         Game mockGame = Game.builder().id("game-1").status(GameStatus.IN_PROGRESS).playerHand(new ArrayList<>()).build();
         when(gameService.playerHits("game-1")).thenReturn(Mono.just(mockGame));
 
@@ -70,7 +70,7 @@ class GameControllerTest {
     }
 
     @Test
-    void testDeleteGame_Returns204() {
+    void deleteGame_GameExists_ReturnsNoContent() {
         when(gameService.deleteGame("game-1")).thenReturn(Mono.empty());
 
         webTestClient.delete()

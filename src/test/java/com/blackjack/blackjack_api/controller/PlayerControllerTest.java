@@ -1,6 +1,7 @@
 package com.blackjack.blackjack_api.controller;
 
 import com.blackjack.blackjack_api.model.entities.Player;
+import com.blackjack.blackjack_api.service.GameService;
 import com.blackjack.blackjack_api.service.PlayerService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,8 +23,11 @@ class PlayerControllerTest {
     @MockitoBean
     private PlayerService playerService;
 
+    @MockitoBean
+    private GameService gameService;
+
     @Test
-    void testCreatePlayer_Returns201() {
+    void createPlayer_ValidName_ReturnsCreated() {
         Player mockPlayer = Player.builder().id("1").name("Adrià").gamesPlayed(0).build();
         when(playerService.createPlayer(anyString())).thenReturn(Mono.just(mockPlayer));
 
@@ -39,7 +43,7 @@ class PlayerControllerTest {
     }
 
     @Test
-    void testGetRanking_Returns200() {
+    void getRanking_PlayersExist_ReturnsPlayerList() {
         Player p1 = Player.builder().id("1").name("Adrià").gamesWon(5).build();
         when(playerService.getTopPlayers()).thenReturn(Flux.just(p1));
 
