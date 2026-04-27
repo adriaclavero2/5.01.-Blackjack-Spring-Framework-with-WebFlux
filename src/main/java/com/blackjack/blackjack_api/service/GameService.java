@@ -1,5 +1,7 @@
 package com.blackjack.blackjack_api.service;
 
+import com.blackjack.blackjack_api.exception.GameRuleException;
+import com.blackjack.blackjack_api.exception.ResourceNotFoundException;
 import com.blackjack.blackjack_api.model.entities.Card;
 import com.blackjack.blackjack_api.model.entities.Game;
 import com.blackjack.blackjack_api.model.enums.GameStatus;
@@ -24,67 +26,66 @@ public class GameService {
     private final GameRepository gameRepository;
     private final PlayerService playerService;
 
-   private static final String[] SUITS = {"HEARTS", "DIAMONDS", "CLUBS", "SPADES"};
-   private static final String[] RANKS = {"2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K", "A"};
-   private static final int[] VALUES = {2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 10, 10, 11};
+    private static final String[] SUITS = {"HEARTS", "DIAMONDS", "CLUBS", "SPADES"};
+    private static final String[] RANKS = {"2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K", "A"};
+    private static final int[] VALUES = {2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 10, 10, 11};
 
     private List<Card> createAndShuffleDeck() {
         List<Card> deck = Arrays.stream(SUITS)
                 .flatMap(suit -> IntStream.range(0, RANKS.length)
                         .mapToObj(rankIndex -> new Card(suit, RANKS[rankIndex], VALUES[rankIndex])))
                 .collect(Collectors.toList());
-
         Collections.shuffle(deck);
         return deck;
     }
 
     public Mono<Game> startNewGame(String playerId) {
-        List<Card> deck = createAndShuffleDeck();
+        return playerService.getPlayerById(playerId)
+                .switchIfEmpty(Mono.error(new ResourceNotFoundException("Could not start game: Player with ID " + playerId + " not found.")))
+                .flatMap(player -> {
+                    List<Card> deck = createAndShuffleDeck();
+                    List<Card> playerHand = new ArrayList<>();
+                    List<Card> dealerHand = new ArrayList<>();
 
-        List<Card> playerHand = new ArrayList<>();
-        List<Card> dealerHand = new ArrayList<>();
+                    playerHand.add(drawCard(deck));
+                    playerHand.add(drawCard(deck));
+                    dealerHand.add(drawCard(deck));
+                    dealerHand.add(drawCard(deck));
 
-        playerHand.add(drawCard(deck));
-        playerHand.add(drawCard(deck));
+                    Game newGame = Game.builder()
+                            .playerId(playerId)
+                            .deck(deck)
+                            .playerHand(playerHand)
+                            .dealerHand(dealerHand)
+                            .status(GameStatus.IN_PROGRESS)
+                            .createdAt(LocalDateTime.now())
+                            .updatedAt(LocalDateTime.now())
+                            .build();
 
-        dealerHand.add(drawCard(deck));
-        dealerHand.add(drawCard(deck));
-
-        Game newGame = Game.builder()
-                .playerId(playerId)
-                .deck(deck)
-                .playerHand(playerHand)
-                .dealerHand(dealerHand)
-                .status(GameStatus.IN_PROGRESS)
-                .createdAt(LocalDateTime.now())
-                .updatedAt(LocalDateTime.now())
-                .build();
-
-        return gameRepository.save(newGame);
+                    return gameRepository.save(newGame);
+                });
     }
 
     public Mono<Game> playerHits(String gameId) {
         return gameRepository.findById(gameId)
+                .switchIfEmpty(Mono.error(new ResourceNotFoundException("Game not found with ID: " + gameId)))
                 .flatMap(game -> {
                     if (game.getStatus() != GameStatus.IN_PROGRESS) {
-                        return Mono.error(new RuntimeException("Game is already finished."));
+                        return Mono.error(new GameRuleException("Illegal move: Cannot HIT because the game is already finished. Current status: " + game.getStatus()));
                     }
 
                     game.getPlayerHand().add(drawCard(game.getDeck()));
-
                     int playerScore = calculateHandScore(game.getPlayerHand());
-                    
+
                     if (playerScore > 21) {
                         game.setStatus(GameStatus.DEALER_WINS);
                     }
-
                     game.setUpdatedAt(LocalDateTime.now());
 
                     return gameRepository.save(game)
                             .flatMap(savedGame -> {
                                 if (savedGame.getStatus() != GameStatus.IN_PROGRESS) {
-                                    return playerService.updatePlayerStats(savedGame.getPlayerId(),
-                                                    savedGame.getStatus())
+                                    return playerService.updatePlayerStats(savedGame.getPlayerId(), savedGame.getStatus())
                                             .thenReturn(savedGame);
                                 }
                                 return Mono.just(savedGame);
@@ -94,13 +95,13 @@ public class GameService {
 
     public Mono<Game> playerStands(String gameId) {
         return gameRepository.findById(gameId)
+                .switchIfEmpty(Mono.error(new ResourceNotFoundException("Game not found with ID: " + gameId)))
                 .flatMap(game -> {
                     if (game.getStatus() != GameStatus.IN_PROGRESS) {
-                        return Mono.error(new RuntimeException("Game is already finished."));
+                        return Mono.error(new GameRuleException("Illegal move: Cannot STAND because the game is already finished. Current status: " + game.getStatus()));
                     }
 
                     int dealerScore = calculateHandScore(game.getDealerHand());
-
                     while (dealerScore < 17) {
                         game.getDealerHand().add(drawCard(game.getDeck()));
                         dealerScore = calculateHandScore(game.getDealerHand());
@@ -122,7 +123,7 @@ public class GameService {
                     return gameRepository.save(game)
                             .flatMap(savedGame -> playerService
                                     .updatePlayerStats(savedGame.getPlayerId(), savedGame.getStatus())
-                            .thenReturn(savedGame));
+                                    .thenReturn(savedGame));
                 });
     }
 
@@ -131,29 +132,28 @@ public class GameService {
     }
 
     private int calculateHandScore(List<Card> hand) {
-        int totalScore = hand.stream()
-                .mapToInt(Card::getValue)
-                .sum();
-
-        long acesCount = hand.stream()
-                .filter(card -> "A".equals(card.getRank()))
-                .count();
+        int totalScore = hand.stream().mapToInt(Card::getValue).sum();
+        long acesCount = hand.stream().filter(card -> "A".equals(card.getRank())).count();
 
         while (totalScore > 21 && acesCount > 0) {
             totalScore -= 10;
             acesCount--;
         }
-
         return totalScore;
     }
 
     public Mono<Game> getGameById(String gameId) {
-        return gameRepository.findById(gameId);
+        return gameRepository.findById(gameId)
+                .switchIfEmpty(Mono.error(new ResourceNotFoundException("Cannot show details: Game not found with ID " + gameId)));
     }
 
     public Mono<Void> deleteGame(String gameId) {
-        return gameRepository.deleteById(gameId);
+        return gameRepository.findById(gameId)
+                .switchIfEmpty(Mono.error(new ResourceNotFoundException("Cannot delete: Game not found with ID " + gameId)))
+                .flatMap(game -> gameRepository.deleteById(gameId));
     }
 
-    public Flux<Game> getGamesByPlayerId(String playerId) { return gameRepository.findAllByPlayerId(playerId); }
+    public Flux<Game> getGamesByPlayerId(String playerId) {
+        return gameRepository.findAllByPlayerId(playerId);
+    }
 }

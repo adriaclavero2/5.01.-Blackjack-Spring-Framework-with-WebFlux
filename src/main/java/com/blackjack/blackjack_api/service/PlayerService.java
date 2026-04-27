@@ -75,4 +75,8 @@ public class PlayerService {
                     return playerRepository.save(player);
                 });
     }
+
+    public Mono<Player> getPlayerById(String id) {
+        return playerRepository.findById(id);
+    }
 }

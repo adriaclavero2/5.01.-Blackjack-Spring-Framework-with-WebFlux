@@ -46,4 +46,25 @@ public class GlobalExceptionHandler {
         response.put("message", "Invalid action. Please make sure you send exactly 'HIT' or 'STAND'.");
         return Mono.just(response);
     }
+
+    @ExceptionHandler(ResourceNotFoundException.class)
+    public ResponseEntity<Map<String, Object>> handleResourceNotFound(ResourceNotFoundException ex) {
+        Map<String, Object> response = new HashMap<>();
+        response.put("timestamp", LocalDateTime.now());
+        response.put("status", HttpStatus.NOT_FOUND.value());
+        response.put("error", "Not Found");
+        response.put("message", ex.getMessage());
+        return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+    }
+
+    // Atrapa CUANDO SE ROMPEN LAS REGLAS DEL JUEGO (Error 400)
+    @ExceptionHandler(GameRuleException.class)
+    public ResponseEntity<Map<String, Object>> handleGameRuleException(GameRuleException ex) {
+        Map<String, Object> response = new HashMap<>();
+        response.put("timestamp", LocalDateTime.now());
+        response.put("status", HttpStatus.BAD_REQUEST.value());
+        response.put("error", "Game Rule Violation");
+        response.put("message", ex.getMessage());
+        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+    }
 }
