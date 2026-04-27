@@ -4,5 +4,5 @@ import lombok.Data;
 
 @Data
 public class NewGameRequest {
-    private String playerName;
+    private String playerId;
 }

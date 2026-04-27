@@ -4,6 +4,7 @@ import com.blackjack.blackjack_api.dto.request.NewGameRequest;
 import com.blackjack.blackjack_api.dto.request.PlayRequest;
 import com.blackjack.blackjack_api.dto.response.GameResponse;
 import com.blackjack.blackjack_api.service.GameService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -20,7 +21,7 @@ public class GameController {
     @PostMapping("/new")
     @ResponseStatus(HttpStatus.CREATED)
     public Mono<GameResponse> createNewGame(@RequestBody NewGameRequest request) {
-        return gameService.startNewGame(request.getPlayerName())
+        return gameService.startNewGame(request.getPlayerId())
                 .map(GameResponse::fromEntity);
     }
 
@@ -30,17 +31,13 @@ public class GameController {
                 .map(GameResponse::fromEntity);
     }
 
+
     @PostMapping("/{id}/play")
-    public Mono<GameResponse> playGame(@PathVariable String id, @RequestBody PlayRequest request) {
-        if ("HIT".equalsIgnoreCase(request.getAction())) {
-            return gameService.playerHits(id)
-                    .map(GameResponse::fromEntity);
-        } else if ("STAND".equalsIgnoreCase(request.getAction())) {
-            return gameService.playerStands(id)
-                    .map(GameResponse::fromEntity);
-        } else {
-            return Mono.error(new IllegalArgumentException("Invalid action. Use HIT or STAND."));
-        }
+    public Mono<GameResponse> playGame(@PathVariable String id, @Valid @RequestBody PlayRequest request) {
+        return switch (request.getAction()) {
+            case HIT -> gameService.playerHits(id).map(GameResponse::fromEntity);
+            case STAND -> gameService.playerStands(id).map(GameResponse::fromEntity);
+        };
     }
 
     @DeleteMapping("/{id}/delete")
