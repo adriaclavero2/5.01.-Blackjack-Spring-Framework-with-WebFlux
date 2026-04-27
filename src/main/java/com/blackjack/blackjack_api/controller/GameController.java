@@ -1,8 +1,8 @@
 package com.blackjack.blackjack_api.controller;
 
-import com.blackjack.blackjack_api.dto.NewGameRequest;
-import com.blackjack.blackjack_api.dto.PlayRequest;
-import com.blackjack.blackjack_api.model.Game;
+import com.blackjack.blackjack_api.dto.request.NewGameRequest;
+import com.blackjack.blackjack_api.dto.request.PlayRequest;
+import com.blackjack.blackjack_api.dto.response.GameResponse;
 import com.blackjack.blackjack_api.service.GameService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -19,21 +19,25 @@ public class GameController {
 
     @PostMapping("/new")
     @ResponseStatus(HttpStatus.CREATED)
-    public Mono<Game> createNewGame(@RequestBody NewGameRequest request) {
-        return gameService.startNewGame(request.getPlayerName());
+    public Mono<GameResponse> createNewGame(@RequestBody NewGameRequest request) {
+        return gameService.startNewGame(request.getPlayerName())
+                .map(GameResponse::fromEntity);
     }
 
     @GetMapping("/{id}")
-    public Mono<Game> getGameDetails(@PathVariable String id) {
-        return gameService.getGameById(id);
+    public Mono<GameResponse> getGameDetails(@PathVariable String id) {
+        return gameService.getGameById(id)
+                .map(GameResponse::fromEntity);
     }
 
     @PostMapping("/{id}/play")
-    public Mono<Game> playGame(@PathVariable String id, @RequestBody PlayRequest request) {
+    public Mono<GameResponse> playGame(@PathVariable String id, @RequestBody PlayRequest request) {
         if ("HIT".equalsIgnoreCase(request.getAction())) {
-            return gameService.playerHits(id);
+            return gameService.playerHits(id)
+                    .map(GameResponse::fromEntity);
         } else if ("STAND".equalsIgnoreCase(request.getAction())) {
-            return gameService.playerStands(id);
+            return gameService.playerStands(id)
+                    .map(GameResponse::fromEntity);
         } else {
             return Mono.error(new IllegalArgumentException("Invalid action. Use HIT or STAND."));
         }
@@ -44,5 +48,4 @@ public class GameController {
     public Mono<Void> deleteGame (@PathVariable String id) {
         return gameService.deleteGame(id);
     }
-
 }

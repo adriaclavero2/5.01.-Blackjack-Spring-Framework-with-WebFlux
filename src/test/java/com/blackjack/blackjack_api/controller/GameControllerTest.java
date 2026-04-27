@@ -33,9 +33,9 @@ class GameControllerTest {
         webTestClient.post()
                 .uri("/game/new")
                 .contentType(MediaType.APPLICATION_JSON)
-                .bodyValue("{\"playerName\": \"Adria\"}") // Simulamos el JSON de entrada
+                .bodyValue("{\"playerName\": \"Adria\"}")
                 .exchange()
-                .expectStatus().isCreated() // Esperamos un 201 Created
+                .expectStatus().isCreated()
                 .expectBody()
                 .jsonPath("$.id").isEqualTo("game-1")
                 .jsonPath("$.status").isEqualTo("IN_PROGRESS");
@@ -43,45 +43,39 @@ class GameControllerTest {
 
     @Test
     void testGetGameDetails_Returns200() {
-        // GIVEN: El servicio encuentra la partida
         Game mockGame = Game.builder().id("game-1").playerId("Adria").build();
         when(gameService.getGameById("game-1")).thenReturn(Mono.just(mockGame));
 
-        // WHEN & THEN: Hacemos GET a /game/{id}
         webTestClient.get()
                 .uri("/game/game-1")
                 .exchange()
-                .expectStatus().isOk() // Esperamos un 200 OK
+                .expectStatus().isOk()
                 .expectBody()
                 .jsonPath("$.id").isEqualTo("game-1");
     }
 
     @Test
     void testPlayGame_Hit_Returns200() {
-        // GIVEN: El servicio procesa pedir carta (HIT)
         Game mockGame = Game.builder().id("game-1").status(GameStatus.IN_PROGRESS).playerHand(new ArrayList<>()).build();
         when(gameService.playerHits("game-1")).thenReturn(Mono.just(mockGame));
 
-        // WHEN & THEN: Hacemos POST a /game/{id}/play pidiendo carta
         webTestClient.post()
                 .uri("/game/game-1/play")
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue("{\"action\": \"HIT\"}")
                 .exchange()
-                .expectStatus().isOk() // Esperamos un 200 OK
+                .expectStatus().isOk()
                 .expectBody()
                 .jsonPath("$.status").isEqualTo("IN_PROGRESS");
     }
 
     @Test
     void testDeleteGame_Returns204() {
-        // GIVEN: El servicio borra la partida sin devolver nada (Mono.empty)
         when(gameService.deleteGame("game-1")).thenReturn(Mono.empty());
 
-        // WHEN & THEN: Hacemos DELETE a /game/{id}/delete
         webTestClient.delete()
                 .uri("/game/game-1/delete")
                 .exchange()
-                .expectStatus().isNoContent(); // Esperamos un 204 No Content
+                .expectStatus().isNoContent();
     }
 }

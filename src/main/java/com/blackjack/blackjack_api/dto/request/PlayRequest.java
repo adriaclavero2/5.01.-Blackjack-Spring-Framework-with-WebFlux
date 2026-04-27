@@ -1,4 +1,4 @@
-package com.blackjack.blackjack_api.dto;
+package com.blackjack.blackjack_api.dto.request;
 
 import lombok.Data;
 
