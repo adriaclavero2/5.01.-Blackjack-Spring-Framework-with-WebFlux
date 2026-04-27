@@ -1,6 +1,6 @@
 package com.blackjack.blackjack_api.service;
 
-import com.blackjack.blackjack_api.model.Player;
+import com.blackjack.blackjack_api.model.entities.Player;
 import com.blackjack.blackjack_api.repository.PlayerRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

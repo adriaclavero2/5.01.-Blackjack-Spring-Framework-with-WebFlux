@@ -1,7 +1,7 @@
 package com.blackjack.blackjack_api.controller;
 
-import com.blackjack.blackjack_api.model.Game;
-import com.blackjack.blackjack_api.model.GameStatus;
+import com.blackjack.blackjack_api.model.entities.Game;
+import com.blackjack.blackjack_api.model.enums.GameStatus;
 import com.blackjack.blackjack_api.service.GameService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -3,8 +3,10 @@ package com.blackjack.blackjack_api.exception;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.server.ResponseStatusException;
+import reactor.core.publisher.Mono;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -34,5 +36,14 @@ public class GlobalExceptionHandler {
         errorBody.put("message", ex.getMessage()); // Opcional, para ver qué falló exactamente
 
         return new ResponseEntity<>(errorBody, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    @ExceptionHandler(org.springframework.web.server.ServerWebInputException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public Mono<Map<String, String>> handleInvalidEnumOrInput(org.springframework.web.server.ServerWebInputException ex) {
+        Map<String, String> response = new HashMap<>();
+        response.put("error", "Bad Request");
+        response.put("message", "Invalid action. Please make sure you send exactly 'HIT' or 'STAND'.");
+        return Mono.just(response);
     }
 }

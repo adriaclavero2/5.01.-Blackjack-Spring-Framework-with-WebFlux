@@ -1,6 +1,6 @@
 package com.blackjack.blackjack_api.controller;
 
-import com.blackjack.blackjack_api.model.Player;
+import com.blackjack.blackjack_api.model.entities.Player;
 import com.blackjack.blackjack_api.service.PlayerService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

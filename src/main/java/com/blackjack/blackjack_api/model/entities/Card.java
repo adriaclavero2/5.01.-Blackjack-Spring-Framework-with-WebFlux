@@ -1,4 +1,4 @@
-package com.blackjack.blackjack_api.model;
+package com.blackjack.blackjack_api.model.entities;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

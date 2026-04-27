@@ -1,6 +1,6 @@
 package com.blackjack.blackjack_api.repository;
 
-import com.blackjack.blackjack_api.model.Game;
+import com.blackjack.blackjack_api.model.entities.Game;
 import org.springframework.data.repository.reactive.ReactiveCrudRepository;
 import org.springframework.stereotype.Repository;
 import reactor.core.publisher.Flux;

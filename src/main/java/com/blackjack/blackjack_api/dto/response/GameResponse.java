@@ -1,8 +1,8 @@
 package com.blackjack.blackjack_api.dto.response;
 
-import com.blackjack.blackjack_api.model.Card;
-import com.blackjack.blackjack_api.model.Game;
-import com.blackjack.blackjack_api.model.GameStatus;
+import com.blackjack.blackjack_api.model.entities.Card;
+import com.blackjack.blackjack_api.model.entities.Game;
+import com.blackjack.blackjack_api.model.enums.GameStatus;
 import lombok.Builder;
 import lombok.Data;
 

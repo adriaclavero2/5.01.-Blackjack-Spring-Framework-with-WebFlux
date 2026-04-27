@@ -1,6 +1,6 @@
 package com.blackjack.blackjack_api.dto.response;
 
-import com.blackjack.blackjack_api.model.Player;
+import com.blackjack.blackjack_api.model.entities.Player;
 import lombok.Builder;
 import lombok.Data;
 

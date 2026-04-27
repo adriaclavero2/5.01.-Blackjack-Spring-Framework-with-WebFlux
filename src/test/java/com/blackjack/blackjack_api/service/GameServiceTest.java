@@ -1,8 +1,8 @@
 package com.blackjack.blackjack_api.service;
 
-import com.blackjack.blackjack_api.model.Card;
-import com.blackjack.blackjack_api.model.Game;
-import com.blackjack.blackjack_api.model.GameStatus;
+import com.blackjack.blackjack_api.model.entities.Card;
+import com.blackjack.blackjack_api.model.entities.Game;
+import com.blackjack.blackjack_api.model.enums.GameStatus;
 import com.blackjack.blackjack_api.repository.GameRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

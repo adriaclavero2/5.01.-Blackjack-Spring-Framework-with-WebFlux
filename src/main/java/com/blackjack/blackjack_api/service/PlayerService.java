@@ -1,8 +1,7 @@
 package com.blackjack.blackjack_api.service;
 
-import com.blackjack.blackjack_api.controller.PlayerController;
-import com.blackjack.blackjack_api.model.GameStatus;
-import com.blackjack.blackjack_api.model.Player;
+import com.blackjack.blackjack_api.model.enums.GameStatus;
+import com.blackjack.blackjack_api.model.entities.Player;
 import com.blackjack.blackjack_api.repository.PlayerRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

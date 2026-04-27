@@ -1,5 +1,6 @@
-package com.blackjack.blackjack_api.model;
+package com.blackjack.blackjack_api.model.entities;
 
+import com.blackjack.blackjack_api.model.enums.GameStatus;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
